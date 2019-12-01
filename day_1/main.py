@@ -51,6 +51,34 @@ def part_two(mass_list):
             temp_mass = amount_fuel
     return sum(fuel)
 
+def part_two_visualized(mass_list):
+    '''Given a list of integer values, computes the fuel requirements considering the fuel itself.'''
+    import matplotlib.pyplot as plt
+    import numpy as np
+    mass_to_fuel = lambda x: max(0, x // 3 - 2)
+    fuel = []
+
+    plt.figure(1)
+
+    for mass in mass_list:
+        temp_mass = mass
+        while len(fuel) == 0 or temp_mass != 0:
+            amount_fuel = mass_to_fuel(temp_mass)
+            fuel.append(amount_fuel)
+            temp_mass = amount_fuel
+
+        y = [mass]
+        temp = mass
+        for entry in fuel:
+            temp += entry
+            y.append(temp)
+        plt.plot(y)
+        fuel = []
+
+    plt.ylabel('Mass carried (arb.)')
+    plt.xlabel('Step # (0 = weight of component)')
+    plt.show()
+
 def test():
     '''Test functions'''
     test_input_list_one = [12, 14, 1969, 100756]
@@ -69,6 +97,8 @@ def main(args):
         mass_list = [int(line.strip()) for line in f.readlines()]
         print('Part 1 Result: {}'.format(part_one(mass_list)))
         print('Part 2 Result: {}'.format(part_two(mass_list)))
+
+        part_two_visualized(mass_list)
 
 if __name__ == '__main__':
     # test()
