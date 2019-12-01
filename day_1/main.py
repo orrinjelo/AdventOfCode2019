@@ -26,13 +26,19 @@
 #
 # What is the sum of the fuel requirements for all of the modules on your spacecraft when also taking into account the mass of the added fuel? 
 
-import sys
+import os, sys
 
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+
+from utils.decorators import *
+
+@timeit('Part 1')
 def part_one(mass_list):
     '''Given a list of integer values, computes the fuel requirements'''
     mass_to_fuel = lambda x: max(0, x // 3 - 2)
     return sum(map(mass_to_fuel, mass_list))
 
+@timeit('Part 2')
 def part_two(mass_list):
     '''Given a list of integer values, computes the fuel requirements considering the fuel itself.'''
     mass_to_fuel = lambda x: max(0, x // 3 - 2)
@@ -57,12 +63,13 @@ def test():
     output_two = part_two(test_input_list_two)
     assert(sum(test_output_two) == output_two)
 
+@timeit('Total')
 def main(args):
     with open(args[1], 'r') as f:
         mass_list = [int(line.strip()) for line in f.readlines()]
-        print('Part one: {}'.format(part_one(mass_list)))
-        print('Part two: {}'.format(part_two(mass_list)))
+        print('Part 1 Result: {}'.format(part_one(mass_list)))
+        print('Part 2 Result: {}'.format(part_two(mass_list)))
 
 if __name__ == '__main__':
-    test()
+    # test()
     main(sys.argv)
