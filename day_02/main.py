@@ -73,7 +73,52 @@ def part_two(x):
 
 def part_two_visualized(x):
     '''Visualization'''
-    pass
+    from PIL import Image, ImageDraw, ImageFont
+    frames = []
+
+    def write_text(pc=-1):
+        # make a blank image for the text, initialized to transparent text color
+        txt = Image.new('RGBA', (800, 600), (0,0,0,0))
+
+        # get a font
+        fnt = ImageFont.truetype('Pillow/Tests/fonts/FreeMonoBold.ttf', 16)
+        # get a drawing context
+        d = ImageDraw.Draw(txt)
+        for i in range(len(x)):
+            c = (255,255,255,255)
+            if pc == i:
+                c = (255,0,0,255)
+            elif pc+1 == i and x[pc] != 99:
+                c = (0,255,0,255)
+            elif pc+2 == i and x[pc] != 99:
+                c = (0,0,255,255)
+            elif pc+3 == i and x[pc] != 99:
+                c = (255,255,0,255)
+            d.text((75*(i%10),30*(i//10)), str(x[i]), font=fnt, fill=c)
+        return txt
+
+    def program_alarm_vis(s, p1=None, p2=None):
+        pc = 0
+        if p1:
+            s[1] = p1
+        if p2:
+            s[2] = p2
+        while s[pc] != 99: # Program term
+            frames.append(write_text(pc))
+            if s[pc] == 1:
+                add(s, s[pc+1], s[pc+2], s[pc+3])
+                pc += 4
+            elif s[pc] == 2:
+                mul(s, s[pc+1], s[pc+2], s[pc+3])
+                pc += 4
+            else:
+                print('Erroneous op: {}'.format(s[pc]))
+        for _ in range(10):
+            frames.append(write_text(pc))
+        return s[0]
+
+    program_alarm_vis(x, 12, 2)
+    frames[0].save('day_02.gif', format='GIF', append_images=frames[1:], save_all=True, duration=500, delay=500, loop=0)
 
 def test():
     '''Test functions'''
@@ -110,10 +155,11 @@ def main(args):
         x = x[0].split(',')
         x = list(map(int, x))
         x2 = x[:]
+        xv = x[:]
         print('Part 1 Result: {}'.format(part_one(x)))
         print('Part 2 Result: {}'.format(part_two(x2)))
 
-        part_two_visualized(x)
+        part_two_visualized(xv)
 
 if __name__ == '__main__':
     test()
