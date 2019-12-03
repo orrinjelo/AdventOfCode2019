@@ -12,7 +12,7 @@ from utils.decorators import *
 def parse(x):
     return x[0],int(x[1:])
 
-def trace_grid(grid, pos, instruction, secondary=False):
+def trace_grid(grid, pos, instruction):
     d,x = parse(instruction)
     # print(d,x)
     if d == 'U':
@@ -30,16 +30,37 @@ def trace_grid(grid, pos, instruction, secondary=False):
 
     return grid, newpos
 
+def trace_grid_more(grid, pos, instruction, last):
+    d,x = parse(instruction)
+    # print(d,x)
+    if d == 'U':
+        grid[pos[0],pos[1]-x:pos[1]] = range(last+x,last,-1)
+        newpos = pos[0],pos[1]-x
+        last += x
+    elif d == 'D':
+        grid[pos[0],pos[1]+1:pos[1]+x+1] = range(last+1,last+x+1)
+        newpos = pos[0],pos[1]+x
+        last += x
+    elif d == 'L':
+        grid[pos[0]-x:pos[0],pos[1]] = range(last+x,last,-1)
+        newpos = pos[0]-x,pos[1]
+        last += x
+    elif d == 'R':
+        grid[pos[0]+1:pos[0]+x+1,pos[1]] = range(last+1,last+x+1)
+        newpos = pos[0]+x,pos[1]
+        last += x
+    return grid, newpos, last
+
 def dist(pt1, pt2):
     return np.abs(pt1[0]-pt2[0])+np.abs(pt1[1]-pt2[1])
 
 @timeit('Part 1')
 def part_one(x,SIZE=20001):
     '''Solves part one'''
-    grid = np.zeros((SIZE,SIZE),dtype=np.uint8)
+    grid = np.zeros((SIZE,SIZE),dtype=np.uint16)
     
     for wire in x:
-        newgrid = np.zeros((SIZE,SIZE),dtype=np.uint8)
+        newgrid = np.zeros((SIZE,SIZE),dtype=np.uint16)
         pos = (SIZE//2,SIZE//2)
         for entry in wire:
             newgrid,pos = trace_grid(newgrid, pos, entry)
@@ -55,22 +76,57 @@ def part_one(x,SIZE=20001):
 
     idx = np.argwhere(dists == min(dists))[0][0]
 
-    # pgrid = grid
-    # pgrid[SIZE//2,SIZE//2] = 3
-    # pgrid[intersects[idx][0],intersects[idx][1]] = 4
-    # plt.figure()
-    # plt.imshow(np.transpose(pgrid),cmap='gist_rainbow',aspect='auto')
-    # plt.show()
     return min(dists)
 
     # return None    
 
 @timeit('Part 2')
-def part_two(x):
+def part_two(x,SIZE=20001):
     '''Solves part two'''
-    return None
 
-def part_two_visualized(x,SIZE=20001):
+    grid = np.zeros((SIZE,SIZE),dtype=np.uint16)
+    
+    for wire in x:
+        newgrid = np.zeros((SIZE,SIZE),dtype=np.uint16)
+        pos = (SIZE//2,SIZE//2)
+        for entry in wire:
+            newgrid,pos = trace_grid(newgrid, pos, entry)
+        grid = grid + newgrid
+
+
+    intersects = np.argwhere(grid > 1)
+
+    grid = np.zeros((SIZE,SIZE),dtype=np.uint32)
+    
+    for wire in x:
+        last = 0
+        newgrid = np.zeros((SIZE,SIZE),dtype=np.uint32)
+        pos = (SIZE//2,SIZE//2)
+        for entry in wire:
+            newgrid,pos,last = trace_grid_more(newgrid, pos, entry, last)
+        grid = grid + newgrid
+        # grid[SIZE//2,SIZE//2] = 1
+
+    dists = []
+
+    for i in intersects:
+        dists.append(grid[i[0],i[1]])
+
+    idx = np.argwhere(dists == min(dists))[0][0]
+
+    # pgrid = grid
+    # pgrid[SIZE//2,SIZE//2] = 3
+    # pgrid[intersects[idx][0],intersects[idx][1]] = 4
+    # # pgrid = grey_dilation(pgrid, size=(SIZE//500, SIZE//500))
+    # plt.figure()
+    # plt.imshow(np.transpose(pgrid),cmap='gist_rainbow',aspect='auto')
+    # plt.show()
+
+    return min(dists)
+
+
+
+def part_one_visualized(x,SIZE=20001):
     '''Visualization'''
     from scipy.ndimage.morphology import grey_dilation
     grid = np.zeros((SIZE,SIZE),dtype=np.uint8)
@@ -99,6 +155,49 @@ def part_two_visualized(x,SIZE=20001):
     plt.figure()
     plt.imshow(np.transpose(pgrid),cmap='gist_rainbow',aspect='auto')
     plt.show()
+    return min(dists)
+
+def part_two_visualized(x,SIZE=20001):
+    '''Solves part two'''
+    from scipy.ndimage.morphology import grey_dilation
+    grid = np.zeros((SIZE,SIZE),dtype=np.uint16)
+    
+    for wire in x:
+        newgrid = np.zeros((SIZE,SIZE),dtype=np.uint16)
+        pos = (SIZE//2,SIZE//2)
+        for entry in wire:
+            newgrid,pos = trace_grid(newgrid, pos, entry)
+        grid = grid + newgrid
+
+
+    intersects = np.argwhere(grid > 1)
+
+    grid = np.zeros((SIZE,SIZE),dtype=np.uint32)
+    
+    for wire in x:
+        last = 10000
+        newgrid = np.zeros((SIZE,SIZE),dtype=np.uint32)
+        pos = (SIZE//2,SIZE//2)
+        for entry in wire:
+            newgrid,pos,last = trace_grid_more(newgrid, pos, entry, last)
+        grid = np.max(grid,newgrid)
+        # grid[SIZE//2,SIZE//2] = 1
+
+    dists = []
+
+    for i in intersects:
+        dists.append(grid[i[0],i[1]])
+
+    idx = np.argwhere(dists == min(dists))[0][0]
+
+    pgrid = grid
+    pgrid[SIZE//2,SIZE//2] = 3
+    pgrid[intersects[idx][0],intersects[idx][1]] = 4
+    pgrid = grey_dilation(pgrid, size=(SIZE//500, SIZE//500))
+    plt.figure()
+    plt.imshow(np.transpose(pgrid),cmap='plasma',aspect='auto')
+    plt.show()
+
     return min(dists)
 
 def test():
@@ -149,8 +248,7 @@ def test():
     ]
     test_solution_1 = 159
     ans = part_one(test_input_1,501)
-    print(ans)
-    # assert(ans == test_solution_1)
+    assert(ans == test_solution_1)
 
     test_input_2 = [
         'R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51'.split(','),
@@ -160,6 +258,18 @@ def test():
     ans = part_one(test_input_2,501)
     assert(ans == test_solution_2)
 
+    test_solution_3 = 30
+    ans = part_two(test_input_0,21)
+    assert(ans == test_solution_3)
+
+    test_solution_4 = 610
+    ans = part_two(test_input_1,501)
+    assert(ans == test_solution_4)
+
+    test_solution_5 = 410
+    ans = part_two(test_input_2,501)
+    assert(ans == test_solution_5)
+
 
 @timeit('Total')
 def main(args):
@@ -168,7 +278,8 @@ def main(args):
         print('Part 1 Result: {}'.format(part_one(x)))
         print('Part 2 Result: {}'.format(part_two(x)))
 
-        # part_two_visualized(x)
+        # part_one_visualized(x)
+        part_two_visualized(x)
 
 if __name__ == '__main__':
     test()
