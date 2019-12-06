@@ -70,7 +70,26 @@ def part_one_visualized(x):
 
 def part_two_visualized(x):
     '''Visualization'''
-    pass
+    import numpy as np 
+    import matplotlib.pyplot as plt
+    from scipy.ndimage.morphology import grey_dilation
+
+    a,b = int(x[0]),int(x[1])
+    r = range(a,b+1)
+    filtered = filter(is_sequential,r)
+    filtered2 = filter(is_special,filtered)
+    filtered2 = list(filtered2)
+    dat = np.zeros((10,(b-a)//10+1),dtype=np.int8)
+    print(a,b,dat.shape)
+    for e in filtered2:
+        try:
+            dat[e%10,(e-a)//10] = 1
+        except IndexError as x:
+            print(e)
+            raise x
+    plt.figure()
+    plt.imshow(grey_dilation(dat,size=(3,1000)),cmap='viridis',aspect='auto')
+    plt.show()
 
 def test():
     '''Test functions'''
@@ -94,7 +113,7 @@ def main(args):
         print('Part 2 Result: {}'.format(part_two(x)))
 
         part_one_visualized(x)
-        part_two_visualized(x)
+        part_two_visualized((1,9999999))
 
 if __name__ == '__main__':
     test()
