@@ -4,9 +4,11 @@ sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
 
 class ElfMachine():
-    def __init__(self, input_cb=input, output_cb=print):
+    def __init__(self, input_cb=input, output_cb=print, mem_size=512):
         self.input_cb = input_cb
         self.output_cb = output_cb
+        self.relative_base = 0
+        self.mem = [0]*mem_size
         self.op = {
             1: self.add,
             2: self.mul,
@@ -15,7 +17,8 @@ class ElfMachine():
             5: self.jmp,
             6: self.jmf,
             7: self.ltn,
-            8: self.eql
+            8: self.eql,
+            9: self.rel,
         }
 
     def scrape_op(self, x):
@@ -28,9 +31,11 @@ class ElfMachine():
 
     def _set(self, s, pc, c, x, C):
         if C == 0:
-            s[c]    = x
-        else:
+            s[c] = x
+        elif C == 1:
             s[pc+3] = x
+        elif C == 2:
+            s[self.relative_base + c]
 
     def add(self, s, pc):
         a, b, c = s[pc + 1], s[pc + 2], s[pc + 3]
@@ -40,13 +45,26 @@ class ElfMachine():
             if A == 0:
                 if B == 0:
                     x = s[a] + s[b]
-                else:
+                elif B == 1:
                     x = s[a] + b 
-            else:
+                elif B == 2:
+                    x = s[a] + s[self.relative_base + b]
+            elif A == 1:
                 if B == 0:
                     x = a + s[b]
-                else:
+                elif B == 1:
                     x = a + b
+                elif B == 2:
+                    x = a + s[self.relative_base + b]
+            elif A == 2:
+                if B == 0:
+                    x = s[self.relative_base + a] + s[b]
+                elif B == 1:
+                    x = s[self.relative_base + a] + b
+                elif B == 2:
+                    x = s[self.relative_base + a] + s[self.relative_base + b]
+
+
             self._set(s, pc, c, x, C)
             pc += 4
         except IndexError as e:
@@ -63,13 +81,25 @@ class ElfMachine():
             if A == 0:
                 if B == 0:
                     x = s[a] * s[b]
-                else:
-                    x = s[a] * b 
-            else:
+                elif B == 1:
+                    x = s[a] * b
+                elif B == 2:
+                    x = s[a] * s[self.relative_base + b] 
+            elif A == 1:
                 if B == 0:
                     x = a * s[b]
-                else:
+                elif B == 1:
                     x = a * b
+                elif B == 2:
+                    x = a * s[self.relative_base + b]
+            elif A == 2:
+                if B == 0:
+                    x = s[self.relative_base + a] * s[b]
+                elif B == 1:
+                    x = s[self.relative_base + a] * b
+                elif B == 2:
+                    x = s[self.relative_base + a] * s[self.relative_base + b]
+
             self._set(s, pc, c, x, C)
             pc += 4
         except IndexError as e:
@@ -99,10 +129,10 @@ class ElfMachine():
         try:
             if C == 0:
                 self.output_cb(s[c])
-                # print(s[c])
-            else:
+            elif C == 1:
                 self.output_cb(c)
-                # print(s)
+            elif C == 2:
+                self.output_cb(s[self.relative_base + c])
             pc += 2
         except IndexError as e:
             print('Invalid index: {}'.format(c))
@@ -121,22 +151,49 @@ class ElfMachine():
                         pc = s[c]
                     else:
                         pc += 3
-                else:
+                elif B == 1:
                     if b:
                         pc = s[c]
                     else:
                         pc += 3
-            else:
+                elif B == 2:
+                    if s[self.relative_base + b]:
+                        pc = s[c]
+                    else:
+                        pc += 3
+            elif C == 1:
                 if B == 0:
                     if s[b]:
                         pc = c
                     else:
                         pc += 3
-                else:
+                elif B == 1:
                     if b:
                         pc = c
                     else:
                         pc += 3
+                elif B == 2:
+                    if s[self.relative_base + b]:
+                        pc = c
+                    else:
+                        pc += 3
+            elif C == 2:
+                if B == 0:
+                    if s[b]:
+                        pc = s[self.relative_base + c]
+                    else:
+                        pc += 3
+                elif B == 1:
+                    if b:
+                        pc = s[self.relative_base + c]
+                    else:
+                        pc += 3
+                elif B == 2:
+                    if s[self.relative_base + b]:
+                        pc = s[self.relative_base + c]
+                    else:
+                        pc += 3
+
         except IndexError as e:
             print('Invalid index: {} {}'.format(b, c))
             print('Input list: {}'.format(s))
@@ -154,20 +211,46 @@ class ElfMachine():
                         pc = s[c]
                     else:
                         pc += 3
-                else:
+                elif B == 1:
                     if not b:
                         pc = s[c]
                     else:
                         pc += 3
-            else:
+                elif B == 2:
+                    if not s[self.relative_base + b]:
+                        pc = s[c]
+                    else:
+                        pc += 3
+            elif C == 1:
                 if B == 0:
                     if not s[b]:
                         pc = c
                     else:
                         pc += 3
-                else:
+                elif B == 1:
                     if not b:
                         pc = c
+                    else:
+                        pc += 3
+                elif B == 2:
+                    if not s[self.relative_base + b]:
+                        pc = c
+                    else:
+                        pc += 3
+            elif C == 2:
+                if B == 0:
+                    if not s[b]:
+                        pc = s[self.relative_base + c]
+                    else:
+                        pc += 3
+                elif B == 1:
+                    if not b:
+                        pc = s[self.relative_base + c]
+                    else:
+                        pc += 3
+                elif B == 2:
+                    if not s[self.relative_base + b]:
+                        pc = s[self.relative_base + c]
                     else:
                         pc += 3
         except IndexError as e:
@@ -184,13 +267,26 @@ class ElfMachine():
             if A == 0:
                 if B == 0:
                     x = 1 if s[a] < s[b] else 0
-                else:
+                elif B == 1:
                     x = 1 if s[a] < b else 0
-            else:
+                elif B == 2:
+                    x = 1 if s[a] < s[self.relative_base + b] else 0
+            elif A == 1:
                 if B == 0:
                     x = 1 if a < s[b] else 0
-                else:
+                elif B == 1:
                     x = 1 if a < b else 0
+                elif B == 2:
+                    x = 1 if a < s[self.relative_base + b] else 0
+            elif A == 2:
+                if B == 0:
+                    x = 1 if s[self.relative_base + a] < s[b] else 0
+                elif B == 1:
+                    x = 1 if s[self.relative_base + a] < b else 0
+                elif B == 2:
+                    x = 1 if s[self.relative_base + a] < s[self.relative_base + b] else 0
+
+
             self._set(s, pc, c, x, C)
             pc += 4
         except IndexError as e:
@@ -207,13 +303,25 @@ class ElfMachine():
             if A == 0:
                 if B == 0:
                     x = 1 if s[a] == s[b] else 0
-                else:
+                elif B == 1:
                     x = 1 if s[a] == b else 0
-            else:
+                elif B == 2:
+                    x = 1 if s[a] == s[self.relative_base + b] else 0
+            elif A == 1:
                 if B == 0:
                     x = 1 if a == s[b] else 0
-                else:
+                elif B == 1:
                     x = 1 if a == b else 0
+                elif B == 2:
+                    x = 1 if a == s[self.relative_base + b] else 0
+            elif A == 2:
+                if B == 0:
+                    x = 1 if s[self.relative_base + a] == s[b] else 0
+                elif B == 1:
+                    x = 1 if s[self.relative_base + a] == b else 0
+                elif B == 2:
+                    x = 1 if s[self.relative_base + a] == s[self.relative_base + b] else 0       
+
             self._set(s, pc, c, x, C)
             pc += 4
         except IndexError as e:
@@ -222,17 +330,32 @@ class ElfMachine():
             raise e
         return pc
 
+    def rel(self, s, pc):
+        c = s[pc + 1]
+        _, _, C, DE = self.scrape_op(s[pc])
+
+        if C == 0:
+            self.relative_base = s[c]
+        elif C == 1:
+            self.relative_base = c
+        else:
+            self.relative_base = s[self.relative_base + c]
+
+        pc += 2
+        return pc        
+
 
     def run_program(self, s, p1=None, p2=None):
         self.finished = False
+        self.mem[:len(s)] = s
         pc = 0
         if p1:
-            s[1] = p1
+            self.mem[1] = p1
         if p2:
-            s[2] = p2
+            self.mem[2] = p2
         while s[pc] != 99: # Program term
             # try:
-                pc = self.op[s[pc]%100](s, pc)
+                pc = self.op[self.mem[pc]%100](self.mem, pc)
             # except Exception as e:
             #     print(e)
             #     print('Erroneous op: {}'.format(s[pc]))
