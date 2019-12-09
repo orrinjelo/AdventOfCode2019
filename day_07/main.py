@@ -36,13 +36,20 @@ def execute_amps(program, amps):
     return res
 
 def execute_amps_feedback(program, amps):
-    global res, idx, flip
+    global res, idx, flip, res_ready
     res = {
         0: 0,
         1: 0,
         2: 0,
         3: 0,
         4: 0
+    }
+    res_ready = {
+        0: True,
+        1: False,
+        2: False,
+        3: False,
+        4: False,
     }
     arg = {
         0: 0
@@ -51,12 +58,23 @@ def execute_amps_feedback(program, amps):
     flip = True
     def rec_wrap(i):
         def receive(*args, **kwargs):
-            global res
+            global res,res_ready
             res[i] = args[0]
+            res_ready[i] = True
+            # if i == 0:
+            #     print('Res 0:', res[0])
         return receive
     def send_wrap(i):
         def send(*args, **kwargs):
-            global idx, flip
+            global idx, flip, res_ready
+            import time
+            while not res_ready[i]:
+                # print('Waiting for res ready ({})'.format(i))
+                # time.sleep(0.5)
+                pass
+
+            # print('Has res_ready! ({})'.format(i))
+
             if flip:
                 flip = False
                 idx += 1
@@ -67,17 +85,33 @@ def execute_amps_feedback(program, amps):
             else:
                 # print('flop: {}'.format(res))
                 flip = True
+                res_ready[i] = False
                 return res[i]
         return send
 
-    vms = [ElfMachine(send(0), receive(1)), 
-           ElfMachine(send(1), receive(2)), 
-           ElfMachine(send(2), receive(3)), 
-           ElfMachine(send(3), receive(4)), 
-           ElfMachine(send(4), receive(0))]
+    vms = [ElfMachine(send_wrap(0), rec_wrap(1)), 
+           ElfMachine(send_wrap(1), rec_wrap(2)), 
+           ElfMachine(send_wrap(2), rec_wrap(3)), 
+           ElfMachine(send_wrap(3), rec_wrap(4)), 
+           ElfMachine(send_wrap(4), rec_wrap(0))]
+
+    import threading
+
+    threads = []
+
     for i in range(5):
-        vm.run_program(program)
-    return res
+        threads.append( threading.Thread(
+            target=vms[i].run_program, args=(program,)
+        ))
+
+    for t in threads:
+        t.start()
+
+    for t in threads:
+        t.join()
+
+    print('Res 4:', res[4], 'Amps: ',amps)
+    return res[4]
 
 @timeit('Part 1')
 def part_one(x):
@@ -99,7 +133,7 @@ def part_two(x):
     perm = permutations([5, 6, 7, 8, 9])
     max_thruster = (0, [5, 6, 7, 8, 9])
     for p in perm:
-        res = execute_amps(x, list(p), True)
+        res = execute_amps_feedback(x, list(p))
         if res > max_thruster[0]:
             max_thruster = (res, p)
 
@@ -134,7 +168,7 @@ def test():
         27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5]
     signal = 139629729
     amps = [9,8,7,6,5]
-    res = execute_amps(test_prog, amps, True)
+    res = execute_amps_feedback(test_prog, amps)
 
     print('Tests complete!')
 

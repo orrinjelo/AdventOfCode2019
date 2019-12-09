@@ -357,7 +357,7 @@ class ElfMachine():
             # try:
                 pc = self.op[self.mem[pc]%100](self.mem, pc)
             # except Exception as e:
-            #     print(e)
+            #     print('Except: {}'.format(e))
             #     print('Erroneous op: {}'.format(s[pc]))
             #     sys.exit(0)
         self.finished = True
