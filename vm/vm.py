@@ -35,7 +35,7 @@ class ElfMachine():
         elif C == 1:
             s[pc+3] = x
         elif C == 2:
-            s[self.relative_base + c]
+            s[self.relative_base + c] = x
 
     def add(self, s, pc):
         a, b, c = s[pc + 1], s[pc + 2], s[pc + 3]
@@ -335,11 +335,11 @@ class ElfMachine():
         _, _, C, DE = self.scrape_op(s[pc])
 
         if C == 0:
-            self.relative_base = s[c]
+            self.relative_base += s[c]
         elif C == 1:
-            self.relative_base = c
+            self.relative_base += c
         else:
-            self.relative_base = s[self.relative_base + c]
+            self.relative_base += s[self.relative_base + c]
 
         pc += 2
         return pc        
