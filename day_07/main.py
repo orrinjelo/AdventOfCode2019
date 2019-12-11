@@ -36,64 +36,41 @@ def execute_amps(program, amps):
     return res
 
 def execute_amps_feedback(program, amps):
-    global res, idx, flip, res_ready
-    res = {
-        0: 0,
-        1: 0,
-        2: 0,
-        3: 0,
-        4: 0
-    }
-    res_ready = {
-        0: True,
-        1: False,
-        2: False,
-        3: False,
-        4: False,
-    }
-    arg = {
-        0: 0
-    }
-    idx = -1
-    flip = True
+    global queues
+    from queue import Queue
+
+    queues = [
+        Queue(),
+        Queue(),
+        Queue(),
+        Queue(),
+        Queue(),
+    ]
+
+    queues[0].put(amps[0])
+    queues[0].put(0)
+    queues[1].put(amps[1])
+    queues[2].put(amps[2])
+    queues[3].put(amps[3])
+    queues[4].put(amps[4])
+
     def rec_wrap(i):
         def receive(*args, **kwargs):
-            global res,res_ready
-            res[i] = args[0]
-            res_ready[i] = True
-            # if i == 0:
-            #     print('Res 0:', res[0])
+            global queues
+            queues[i].put(args[0])
         return receive
+
     def send_wrap(i):
         def send(*args, **kwargs):
-            global idx, flip, res_ready
-            import time
-            while not res_ready[i]:
-                # print('Waiting for res ready ({})'.format(i))
-                # time.sleep(0.5)
-                pass
-
-            # print('Has res_ready! ({})'.format(i))
-
-            if flip:
-                flip = False
-                idx += 1
-                # print('flip: {}'.format(amps[idx]))
-                if idx > 4:
-                    idx = 0
-                return amps[idx]
-            else:
-                # print('flop: {}'.format(res))
-                flip = True
-                res_ready[i] = False
-                return res[i]
+            global queues
+            return queues[i].get(block=True)
         return send
 
-    vms = [ElfMachine(send_wrap(0), rec_wrap(1)), 
-           ElfMachine(send_wrap(1), rec_wrap(2)), 
-           ElfMachine(send_wrap(2), rec_wrap(3)), 
-           ElfMachine(send_wrap(3), rec_wrap(4)), 
-           ElfMachine(send_wrap(4), rec_wrap(0))]
+    vms = [ElfMachine(input_cb=send_wrap(0), output_cb=rec_wrap(1)), 
+           ElfMachine(input_cb=send_wrap(1), output_cb=rec_wrap(2)), 
+           ElfMachine(input_cb=send_wrap(2), output_cb=rec_wrap(3)), 
+           ElfMachine(input_cb=send_wrap(3), output_cb=rec_wrap(4)), 
+           ElfMachine(input_cb=send_wrap(4), output_cb=rec_wrap(0))]
 
     import threading
 
@@ -110,8 +87,9 @@ def execute_amps_feedback(program, amps):
     for t in threads:
         t.join()
 
-    print('Res 4:', res[4], 'Amps: ',amps)
-    return res[4]
+    res = queues[0].get()
+
+    return res
 
 @timeit('Part 1')
 def part_one(x):
