@@ -4,6 +4,7 @@
 import os, sys
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import animation
 
 sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 
@@ -18,6 +19,8 @@ class Arcade():
         self.score = 0
         self.ball = (0,0)
         self.paddle = (0,0)
+
+        self.frames = []
         
     def run(self,x):
         self.vm.run_program(x)
@@ -49,19 +52,20 @@ def part_one(x):
 
     blocks = np.where(a.screen == 2)
 
-    plt.figure(1)
-    plt.imshow(np.transpose(a.screen))
-    plt.show()
+    # plt.figure(1)
+    # plt.imshow(np.transpose(a.screen))
+    # plt.show()
 
     return len(blocks[0])
 
 @timeit('Part 2')
 def part_two(x):
     '''Solves part two'''
-    
+
     def dumb(x):
         ballx, bally = a.ball
         paddx, paddy = a.paddle
+        
         if ballx > paddx:
             return 1
         elif ballx < paddx:
@@ -74,15 +78,45 @@ def part_two(x):
     x[0] = 2
     a.run(x)
 
-    plt.figure(1)
-    plt.imshow(np.transpose(a.screen))
-    plt.show()
+    # plt.figure(1)
+    # plt.imshow(np.transpose(a.screen))
+    # plt.show()
 
     return a.score
 
 def part_two_visualized(x):
     '''Visualization'''
-    pass
+    frames = []
+
+    def dumb(x):
+        ballx, bally = a.ball
+        paddx, paddy = a.paddle
+        frames.append(
+            [plt.imshow(np.transpose(a.screen))]
+        )
+        if ballx > paddx:
+            return 1
+        elif ballx < paddx:
+            return -1
+        else:
+            return 0
+
+    a = Arcade(input_cb=dumb)
+
+    fig,ax = plt.subplots()
+    im = plt.imshow(np.transpose(a.screen))
+
+    x[0] = 2
+    a.run(x)
+    import logging
+    animation._log.setLevel(logging.DEBUG)
+    ani = animation.ArtistAnimation(fig, frames[:30], interval=50, blit=True)
+    # plt.show()
+    # ani.save('game2.gif', writer='imagemagick')
+    Writer = animation.writers['ffmpeg']
+    writer = Writer(fps=1, metadata=dict(artist='Me'), bitrate=1800)
+    ani.save('im.mp4',writer=writer)
+
 
 def test():
     '''Test functions'''
@@ -97,7 +131,7 @@ def main(args):
         print('Part 1 Result: {}'.format(part_one(x)))
         print('Part 2 Result: {}'.format(part_two(x)))
 
-        part_two_visualized(x)
+        # part_two_visualized(x)
 
 if __name__ == '__main__':
     test()

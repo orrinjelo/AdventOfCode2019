@@ -149,7 +149,73 @@ def part_two(x):
 
 def part_two_visualized(x):
     '''Visualization'''
-    pass
+
+    moons = parse_moons(x)
+    def extract(moons):
+        x = [moon.position[0] for moon in moons]
+        y = [moon.position[1] for moon in moons]
+        z = [moon.position[2] for moon in moons]
+        vx = [moon.velocity[0] for moon in moons]
+        vy = [moon.velocity[1] for moon in moons]
+        vz = [moon.velocity[2] for moon in moons]
+        return (x,y,z,vx,vy,vz)
+    stop = False
+    init = extract(moons)
+    x = {
+        0: [],
+        1: [],
+        2: [],
+        3: [],
+    }
+    y = {
+        0: [],
+        1: [],
+        2: [],
+        3: [],
+    }
+    z = {
+        0: [],
+        1: [],
+        2: [],
+        3: [],
+    }
+
+    N = 10
+
+    t0 = np.arange(N)
+
+    for i in range(N):
+        step_moons(moons)
+        e = extract(moons)
+        print(e)
+        x[i].append(e[0])
+        y[i].append(e[1])
+        z[i].append(e[2])
+
+    t = np.arange(0,N,0.1)
+
+    xx = np.interp(t,t0,x)
+    yy = np.interp(t,t0,y)
+    zz = np.interp(t,t0,z)
+
+
+    xdata,ydata,zdata = [],[],[]
+
+    fig = plt.figure(1)
+    ax = plt.axes(projection='3d')
+    ln, = ax.plot3D([],[])
+    ln, = ax.plot3D([],[],'ro')
+
+    def update(i):
+        xdata.append(xx[i])
+        ydata.append(yy[i])
+        zdata.append(zz[i])
+        ln.set_data(xdata, ydata, zdata)
+        return ln,
+
+    ani = animation.FuncAnimation(fig, update, frames=np.arange(0,int(N/0.1),1), blit=True)
+    ani.save('day_12.gif', writer='imagemagick')
+    plt.show()    
 
 def test():
     '''Test functions'''
@@ -189,7 +255,7 @@ def main(args):
         print('Part 2 Result: {}'.format(part_two(x)))
 
         # part_one_visualized(x)
-        # part_two_visualized(x)
+        part_two_visualized(x)
 
 if __name__ == '__main__':
     test()
