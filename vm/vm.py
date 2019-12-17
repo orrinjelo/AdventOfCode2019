@@ -353,7 +353,7 @@ class ElfMachine():
             self.mem[1] = p1
         if p2:
             self.mem[2] = p2
-        while s[pc] != 99: # Program term
+        while s[pc] != 99 and not self.finished: # Program term
             # try:
                 pc = self.op[self.mem[pc]%100](self.mem, pc)
             # except Exception as e:
