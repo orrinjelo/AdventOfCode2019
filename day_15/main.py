@@ -73,9 +73,6 @@ class RepairDroid():
             elif self.dir == 4:
                 self.dir = 2
 
-
-
-
         elif loc == 2:
             oldpos = self.pos
             self.pos = self.pos[0]+self.dir_db[self.dir][0],self.pos[1]+self.dir_db[self.dir][1]
