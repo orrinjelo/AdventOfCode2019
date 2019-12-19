@@ -9,6 +9,7 @@ class ElfMachine():
         self.output_cb = output_cb
         self.relative_base = 0
         self.mem = [0]*mem_size
+        self.mem_size = mem_size
         self.op = {
             1: self.add,
             2: self.mul,
@@ -347,6 +348,8 @@ class ElfMachine():
 
     def run_program(self, s, p1=None, p2=None):
         self.finished = False
+        self.relative_base = 0
+        self.mem = [0]*self.mem_size
         self.mem[:len(s)] = s
         pc = 0
         if p1:
