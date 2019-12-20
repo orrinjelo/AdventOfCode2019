@@ -97,7 +97,7 @@ def part_two(x):
     x = np.arange(0,100)
     data = []
     for i in range(100):
-        d['FUEL'].manufacture(1)
+        d['FUEL'].manufacture(100)
         data.append(d['ORE'].available)
 
     from scipy.optimize import curve_fit
@@ -107,7 +107,7 @@ def part_two(x):
 
     fitting_params, cov = curve_fit(
         f, x, data, 
-        [1000000000000,31]
+        [1000000000000,220019]
     )
 
     a,b = fitting_params
@@ -116,7 +116,10 @@ def part_two(x):
 
     # plt.figure(1)
     # plt.plot(data)
-    # plt.show()
+    # plt.plot(a - b*x)
+    plt.figure(2)
+    plt.plot(data - (a - b*x))
+    plt.show()
 
 
 def part_two_visualized(x):

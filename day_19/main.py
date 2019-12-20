@@ -52,9 +52,115 @@ def part_one(p):
     return count
 
 @timeit('Part 2')
-def part_two(x):
+def part_two(p):
     '''Solves part two'''
-    return None
+    global x,y,grid,vm,query_g,xx,yy,fin
+    fin = False
+    grid = {}
+
+    def draw(i):
+        global x,y,grid,xx,yy
+        grid[(xx,yy)] = i
+
+    # def query_generator(*args, **kwargs):
+    #     global x,y,grid,vm,xx,yy
+    #     x,y = 0,0
+    #     xx,yy = 0,0
+    #     while True:
+    #         yield x
+    #         yield y
+
+    #         if grid[(x,y)] == 0:
+    #             y += 1
+    #             yy = y
+    #             continue
+    #         elif grid[(x,y)] == 1:
+    #             yield x
+    #             yy = y + 99
+    #             yield y + 99
+    #             if x % 10 == 0:
+    #                 print('At x =',x)
+    #             if grid[(x,y+99)] == 0:
+    #                 x += 1
+    #                 xx = x
+    #                 y = 0
+    #                 yy = y
+    #                 continue
+    #             elif grid[(x,y+99)] == 1:
+    #                 print('Almost at',x,y)
+    #                 xx = x+99
+    #                 yy = y
+    #                 yield xx
+    #                 yield yy
+    #                 if grid[(xx,yy)] == 1:
+    #                     print('Found at',x,y)
+    #                     vm.finished = True
+    #                     fin = True
+    #                 else:
+    #                     x += 1
+    #                     xx = x 
+    #                     y = 0
+    #                     yy = y
+
+    def query_generator(*args, **kwargs):
+        global x,y,grid,vm,xx,yy,fin
+        x,y = 0,10
+        xx,yy = 0,10
+        last_x = 0
+        S = 99
+        while True:
+            yield x
+            yield y
+
+            if grid[(x,y)] == 0:
+                x += 1
+                xx = x
+                continue
+            elif grid[(x,y)] == 1:
+                xx = x + S
+                last_x = x
+                yield xx
+                yield y
+                # if y % 10 == 0:
+                    # print('At y =',y)
+                if grid[(x+S,y)] == 0:
+                    y += 1
+                    yy = y
+                    x = last_x
+                    xx = x
+                    continue
+                elif grid[(x+S,y)] == 1:
+                    # print('Almost at',x,y)
+                    xx = x
+                    yy = y+S
+                    yield x
+                    yield y+S
+                    if grid[(x,y+S)] == 1:
+                        print('Found at',x,y)
+                        vm.finished = True
+                        fin = True
+                    else:
+                        y += 1
+                        yy = y 
+                        x = last_x
+                        xx = x
+
+    query_g = query_generator() 
+
+    def query(*args, **kwargs):
+        global query_g
+        return next(query_g)
+
+    vm = ElfMachine(output_cb=draw, input_cb=query, mem_size=8196)
+
+    while not fin:
+        vm.run_program(p)
+
+    # plt.figure(1)
+    # plt.imshow(grid)
+    # plt.show()
+
+    return x*10000+y
 
 def part_two_visualized(x):
     '''Visualization'''
