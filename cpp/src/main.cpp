@@ -21,6 +21,7 @@ int main( int ac, char* av[] )
         ("input,i",   po::value<std::string>(), "int code file to parse and run")
         ("memsize,s", po::value<int>()->default_value(512), "memory size")
         ("memset,m",  po::value<std::vector<int>>()->multitoken(), "memory size")
+        ("optimal_date",po::value<int>(), "day 2 part 2 target date")
     ;
 
     po::variables_map vm;
@@ -38,6 +39,33 @@ int main( int ac, char* av[] )
     }
 
     VM elf(vm["memsize"].as<int>());
+
+    if (vm.count("optimal_date"))
+    {
+        // e.g 19690720
+        std::ifstream in(vm["input"].as<std::string>());
+        std::string inputCode;
+        in >> inputCode;
+        for (int i=0; i < 100; ++i)
+        {
+            for (int j=0; j<100; ++j)
+            {
+                elf.reset();
+                elf.loadIntCode(inputCode);
+                auto &mem = elf.memory();
+                mem[1] = i;
+                mem[2] = j;
+                elf.execute();
+                if (mem[0] == vm["optimal_date"].as<int>())
+                {
+                    std::cout << i*100 + j << std::endl;
+                    return 0;
+                }
+
+            }
+        }
+                
+    }
 
     if (vm.count("input"))
     {
