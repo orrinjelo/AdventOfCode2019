@@ -4,25 +4,26 @@
 
 #include "loguru.hpp"
 #include "vm.h"
+#include "utils.h"
 
 VM::VM( int memSize ) : running_(false), pc_(0), relativeBase_(0)
 {
     memory_.resize(memSize);
 
     inputCB_ = [](std::string s) -> int {
-        std::cout << s;
+        std::cout << s << " ";
         int i = 0;
         std::cin >> i;
         return i;
     };
 
-    outputCB_ = [](std::string s) -> void {
-        std::cout << s;
+    outputCB_ = [](int s) -> void {
+        std::cout << ": " << s << std::endl;
     };
 }
 
 VM::VM( std::function<int(std::string)>  inputCB, 
-        std::function<void(std::string)> ouputCB,
+        std::function<void(int)> ouputCB,
         int memSize
 ) : running_(false), pc_(0), relativeBase_(0)
 {
@@ -70,10 +71,19 @@ void VM::execute()
 
     while (running_)
     {
-        switch(memory_[pc_])
+        LOG_F(9, "memory: %s", vectorToString(memory_).c_str());
+        LOG_F(9, "pc: %d", pc_);
+
+        switch(memory_[pc_] % 100)
         {
             case ADD: operators_.add(memory_, pc_, relativeBase_); break;
             case MUL: operators_.mul(memory_, pc_, relativeBase_); break;
+            case INP: operators_.inp(memory_, pc_, relativeBase_, inputCB_); break;
+            case PRT: operators_.prt(memory_, pc_, relativeBase_, outputCB_); break;
+            case JMP: operators_.jmp(memory_, pc_, relativeBase_); break;
+            case JMF: operators_.jmf(memory_, pc_, relativeBase_); break;
+            case LTN: operators_.ltn(memory_, pc_, relativeBase_); break;
+            case EQL: operators_.eql(memory_, pc_, relativeBase_); break;
             case HALT: running_ = false; break;
             default:
                 LOG_F(ERROR, "Unknown op: %d", memory_[pc_]);

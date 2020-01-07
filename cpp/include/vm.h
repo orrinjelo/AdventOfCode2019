@@ -13,12 +13,18 @@ public:
     enum OpCode {
         ADD = 1,
         MUL = 2,
+        INP = 3,
+        PRT = 4,
+        JMP = 5,
+        JMF = 6,
+        LTN = 7,
+        EQL = 8,
         HALT = 99
     };
 
     VM( int memSize=512 );
     VM( std::function<int(std::string)>  inputCB, 
-        std::function<void(std::string)> ouputCB,
+        std::function<void(int)> ouputCB,
         int memSize=512
     );
     ~VM() {}
@@ -42,7 +48,7 @@ private:
     int              relativeBase_;
 
     std::function<int(std::string)>  inputCB_;
-    std::function<void(std::string)> outputCB_;
+    std::function<void(int)> outputCB_;
 
     void stringToVector(std::string s);
 };

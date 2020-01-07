@@ -129,6 +129,151 @@ BOOST_AUTO_TEST_CASE( test_mul_2 )
 }
 BOOST_AUTO_TEST_SUITE_END() // op_mul
 
+BOOST_AUTO_TEST_SUITE( op_inp )
+BOOST_AUTO_TEST_CASE( test_inp_1 )
+{
+    Operators op;
+    int pc = 0;
+    int relativeBase = 0;
+    std::vector<int> p{3,3,99,-1};
+
+    op.inp(p, pc, relativeBase, 
+        [](std::string s) -> int {
+            return 8;
+        }
+    );
+
+    BOOST_CHECK(p[3] == 8);
+}
+BOOST_AUTO_TEST_SUITE_END() // op_inp
+
+BOOST_AUTO_TEST_SUITE( op_prt )
+BOOST_AUTO_TEST_CASE( test_prt_1 )
+{
+    Operators op;
+    int pc = 0;
+    int relativeBase = 0;
+    std::vector<int> p{4,3,99,42};
+
+    op.prt(p, pc, relativeBase, 
+        [](int x) -> void {
+            BOOST_CHECK(x == 42);
+        }
+    );
+}
+BOOST_AUTO_TEST_SUITE_END() // op_prt
+
+BOOST_AUTO_TEST_SUITE( op_jmp )
+BOOST_AUTO_TEST_CASE( test_jmp_1 )
+{
+    Operators op;
+    int pc = 0;
+    int relativeBase = 0;
+    std::vector<int> p{1105,1,33};
+
+    op.jmp(p, pc, relativeBase);
+
+    LOG_F(INFO, "pc = %d", pc);
+
+    BOOST_CHECK(pc == 33);
+}
+
+BOOST_AUTO_TEST_CASE( test_jmp_2 )
+{
+    Operators op;
+    int pc = 0;
+    int relativeBase = 0;
+    std::vector<int> p{1105,0,33};
+
+    op.jmp(p, pc, relativeBase);
+
+    LOG_F(INFO, "pc = %d", pc);
+
+    BOOST_CHECK(pc == 3);
+}
+BOOST_AUTO_TEST_SUITE_END() // op_jmp
+
+BOOST_AUTO_TEST_SUITE( op_jmf )
+BOOST_AUTO_TEST_CASE( test_jmf_1 )
+{
+    Operators op;
+    int pc = 0;
+    int relativeBase = 0;
+    std::vector<int> p{1106,1,33};
+
+    op.jmf(p, pc, relativeBase);
+
+    LOG_F(INFO, "pc = %d", pc);
+
+    BOOST_CHECK(pc == 3);
+}
+
+BOOST_AUTO_TEST_CASE( test_jmf_2 )
+{
+    Operators op;
+    int pc = 0;
+    int relativeBase = 0;
+    std::vector<int> p{1106,0,33};
+
+    op.jmf(p, pc, relativeBase);
+
+    LOG_F(INFO, "pc = %d", pc);
+
+    BOOST_CHECK(pc == 33);
+}
+BOOST_AUTO_TEST_SUITE_END() // op_jmf
+
+BOOST_AUTO_TEST_SUITE( op_ltn )
+BOOST_AUTO_TEST_CASE( test_ltn_1 )
+{
+    Operators op;
+    int pc = 0;
+    int relativeBase = 0;
+    std::vector<int> p{7,5,6,7,99,1,2,0};
+
+    op.ltn(p, pc, relativeBase);
+
+    BOOST_CHECK(p[7] == 1);
+}
+
+BOOST_AUTO_TEST_CASE( test_ltn_2 )
+{
+    Operators op;
+    int pc = 0;
+    int relativeBase = 0;
+    std::vector<int> p{7,5,6,7,99,2,1,0};
+
+    op.ltn(p, pc, relativeBase);
+
+    BOOST_CHECK(p[7] == 0);
+}
+BOOST_AUTO_TEST_SUITE_END() // op_ltn
+
+BOOST_AUTO_TEST_SUITE( op_eql )
+BOOST_AUTO_TEST_CASE( test_eql_1 )
+{
+    Operators op;
+    int pc = 0;
+    int relativeBase = 0;
+    std::vector<int> p{7,5,6,7,99,1,2,0};
+
+    op.eql(p, pc, relativeBase);
+
+    BOOST_CHECK(p[7] == 0);
+}
+
+BOOST_AUTO_TEST_CASE( test_eql_2 )
+{
+    Operators op;
+    int pc = 0;
+    int relativeBase = 0;
+    std::vector<int> p{7,5,6,7,99,1,1,0};
+
+    op.eql(p, pc, relativeBase);
+
+    BOOST_CHECK(p[7] == 1);
+}
+BOOST_AUTO_TEST_SUITE_END() // op_eql
 
 //____________________________________________________________________________//
 

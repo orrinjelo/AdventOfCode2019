@@ -65,7 +65,7 @@ void Operators::add(
 
     try
     {
-        interpretOperand(program, a, A, offset);
+        interpretOperand(program, a, C, offset);
     } catch (std::runtime_error &e)
     {
         LOG_F(ERROR, "Bad A.");
@@ -81,7 +81,7 @@ void Operators::add(
     
     try
     {
-        interpretOperandAndSet(program, a+b, c, C, offset);
+        interpretOperandAndSet(program, a+b, c, A, offset);
     } catch (std::runtime_error &e)
     {
         LOG_F(ERROR, "Bad C.");
@@ -106,7 +106,7 @@ void Operators::mul(
 
     try
     {
-        interpretOperand(program, a, A, offset);
+        interpretOperand(program, a, C, offset);
     } catch (std::runtime_error &e)
     {
         LOG_F(ERROR, "Bad A.");
@@ -122,7 +122,218 @@ void Operators::mul(
     
     try
     {
-        interpretOperandAndSet(program, a*b, c, C, offset);
+        interpretOperandAndSet(program, a*b, c, A, offset);
+    } catch (std::runtime_error &e)
+    {
+        LOG_F(ERROR, "Bad C.");
+    }
+
+    pc += 4;
+}
+
+
+void Operators::inp(
+        std::vector<int> &program,
+        int              &pc,
+        int              offset,
+        std::function<int(std::string)> inputCallback
+    )
+{
+    int &c = program[pc + 1];
+
+    int A,B,C,DE;
+    scrapeOp(program[pc],C,A,B,DE);
+
+    int x = 0;
+    try
+    {
+        x = inputCallback(">");
+    } catch (std::runtime_error &e)
+    {
+        LOG_F(ERROR, "Input callback.");
+    }
+
+    try
+    {
+        interpretOperandAndSet(program, x, c, C, offset);
+    } catch (std::runtime_error &e)
+    {
+        LOG_F(ERROR, "Bad C.");
+    }
+
+    pc += 2;
+}
+
+
+void Operators::prt(
+        std::vector<int> &program,
+        int              &pc,
+        int              offset,
+        std::function<void(int)> outputCallback
+    )
+{
+    int &c = program[pc + 1];
+
+    int A,B,C,DE;
+    scrapeOp(program[pc],C,A,B,DE);
+
+    try
+    {
+        if (C == 0)
+            outputCallback(program[c]);
+        else
+            outputCallback(c);
+    } catch (std::runtime_error &e)
+    {
+        LOG_F(ERROR, "Input callback.");
+    }
+
+    pc += 2;
+}
+
+void Operators::jmp(
+        std::vector<int> &program,
+        int              &pc,
+        int              offset
+    )
+{
+    int b = program[pc + 1];
+    int c = program[pc + 2];
+
+    int A,B,C,DE;
+    scrapeOp(program[pc],A,B,C,DE);
+
+    try
+    {
+        interpretOperand(program, b, C, offset);
+    } catch (std::runtime_error &e)
+    {
+        LOG_F(ERROR, "Bad B.");
+    }
+
+    try
+    {
+        interpretOperand(program, c, B, offset);
+    } catch (std::runtime_error &e)
+    {
+        LOG_F(ERROR, "Bad C.");
+    }
+
+    if (b)
+        pc = c;
+    else
+        pc += 3;
+}
+
+
+void Operators::jmf(
+        std::vector<int> &program,
+        int              &pc,
+        int              offset
+    )
+{
+    int b = program[pc + 1];
+    int c = program[pc + 2];
+
+    int A,B,C,DE;
+    scrapeOp(program[pc],A,B,C,DE);
+
+    try
+    {
+        interpretOperand(program, b, C, offset);
+    } catch (std::runtime_error &e)
+    {
+        LOG_F(ERROR, "Bad B.");
+    }
+
+    try
+    {
+        interpretOperand(program, c, B, offset);
+    } catch (std::runtime_error &e)
+    {
+        LOG_F(ERROR, "Bad C.");
+    }
+
+    if (!b)
+        pc = c;
+    else
+        pc += 3;
+}
+
+
+void Operators::ltn(
+        std::vector<int> &program,
+        int              &pc,
+        int              offset
+    )
+{
+    int a  = program[pc + 1];
+    int b  = program[pc + 2];
+    int &c = program[pc + 3];
+
+    int A,B,C,DE;
+    scrapeOp(program[pc],A,B,C,DE);
+
+    try
+    {
+        interpretOperand(program, a, C, offset);
+    } catch (std::runtime_error &e)
+    {
+        LOG_F(ERROR, "Bad A.");
+    }
+
+    try
+    {
+        interpretOperand(program, b, B, offset);
+    } catch (std::runtime_error &e)
+    {
+        LOG_F(ERROR, "Bad B.");
+    }
+    
+    try
+    {
+        interpretOperandAndSet(program, a < b ? 1 : 0, c, A, offset);
+    } catch (std::runtime_error &e)
+    {
+        LOG_F(ERROR, "Bad C.");
+    }
+
+    pc += 4;
+}
+
+
+void Operators::eql(
+        std::vector<int> &program,
+        int              &pc,
+        int              offset
+    )
+{
+    int a  = program[pc + 1];
+    int b  = program[pc + 2];
+    int &c = program[pc + 3];
+
+    int A,B,C,DE;
+    scrapeOp(program[pc],A,B,C,DE);
+
+    try
+    {
+        interpretOperand(program, a, B, offset);
+    } catch (std::runtime_error &e)
+    {
+        LOG_F(ERROR, "Bad A.");
+    }
+
+    try
+    {
+        interpretOperand(program, b, A, offset);
+    } catch (std::runtime_error &e)
+    {
+        LOG_F(ERROR, "Bad B.");
+    }
+    
+    try
+    {
+        interpretOperandAndSet(program, a == b ? 1 : 0, c, C, offset);
     } catch (std::runtime_error &e)
     {
         LOG_F(ERROR, "Bad C.");

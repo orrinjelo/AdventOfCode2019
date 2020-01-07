@@ -87,7 +87,7 @@ int main( int ac, char* av[] )
 
     elf.execute();
 
-    std::cout << elf.memory()[0] << std::endl;
+    std::cout << "Memory location 0: " << elf.memory()[0] << std::endl;
 
     return 0;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <functional>
 
 class Operators
 {
@@ -14,8 +15,45 @@ public:
         int              offset=0
     );
 
-
     void mul(
+        std::vector<int> &program,
+        int              &pc,
+        int              offset=0
+    );
+
+    void inp(
+        std::vector<int> &program,
+        int              &pc,
+        int              offset,
+        std::function<int(std::string)> inputCallback
+    );
+
+    void prt(
+        std::vector<int> &program,
+        int              &pc,
+        int              offset,
+        std::function<void(int)> outputCallback
+    );
+
+    void jmp(
+        std::vector<int> &program,
+        int              &pc,
+        int              offset=0
+    );
+
+    void jmf(
+        std::vector<int> &program,
+        int              &pc,
+        int              offset=0
+    );
+
+    void ltn(
+        std::vector<int> &program,
+        int              &pc,
+        int              offset=0
+    );
+
+    void eql(
         std::vector<int> &program,
         int              &pc,
         int              offset=0

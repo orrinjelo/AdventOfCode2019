@@ -8,6 +8,7 @@
 #include <boost/test/included/unit_test.hpp>
 
 #include "vm.h"
+#include "utils.h"
 
 using namespace boost::unit_test;
 
@@ -79,6 +80,202 @@ BOOST_AUTO_TEST_CASE( test_2_4 )
     BOOST_CHECK(mem[0] == 1);
 }
 BOOST_AUTO_TEST_SUITE_END() // vm_day_2
+
+BOOST_AUTO_TEST_SUITE( vm_day_5 )
+BOOST_AUTO_TEST_CASE( test_5_1 )
+{
+    std::vector<int> p{3,9,8,9,10,9,4,9,99,-1,8};
+    
+    VM vm(
+        [](std::string s) -> int {
+            return 8;
+        },
+        [](int i) -> void {
+            BOOST_CHECK(i);
+        }
+    );
+
+    vm.loadIntCode(p);
+    vm.execute();
+}
+
+BOOST_AUTO_TEST_CASE( test_5_2 )
+{
+    std::vector<int> p{3,9,8,9,10,9,4,9,99,-1,8};
+    
+    VM vm(
+        [](std::string s) -> int {
+            return 7;
+        },
+        [](int i) -> void {
+            BOOST_CHECK(!i);
+        }
+    );
+
+    vm.loadIntCode(p);
+    vm.execute();
+}
+
+BOOST_AUTO_TEST_CASE( test_5_3 )
+{
+    std::vector<int> p{3,9,7,9,10,9,4,9,99,-1,8};
+    
+    VM vm(
+        [](std::string s) -> int {
+            return 7;
+        },
+        [](int i) -> void {
+            BOOST_CHECK(i);
+        }
+    );
+
+    vm.loadIntCode(p);
+    vm.execute();
+}
+
+BOOST_AUTO_TEST_CASE( test_5_4 )
+{
+    std::vector<int> p{3,9,7,9,10,9,4,9,99,-1,8};
+    
+    VM vm(
+        [](std::string s) -> int {
+            return 8;
+        },
+        [](int i) -> void {
+            BOOST_CHECK(!i);
+        }
+    );
+
+    vm.loadIntCode(p);
+    vm.execute();
+}
+
+BOOST_AUTO_TEST_CASE( test_5_5 )
+{
+    std::vector<int> p{3,3,1108,-1,8,3,4,3,99};
+    
+    VM vm(
+        [](std::string s) -> int {
+            return 8;
+        },
+        [](int i) -> void {
+            BOOST_CHECK(i);
+        }
+    );
+
+    vm.loadIntCode(p);
+    vm.execute();
+}
+
+BOOST_AUTO_TEST_CASE( test_5_6 )
+{
+    std::vector<int> p{3,3,1107,-1,8,3,4,3,99};
+    
+    VM vm(
+        [](std::string s) -> int {
+            return 6;
+        },
+        [](int i) -> void {
+            BOOST_CHECK(i);
+        }
+    );
+
+    vm.loadIntCode(p);
+    vm.execute();
+}
+
+BOOST_AUTO_TEST_CASE( test_5_7 )
+{
+    std::vector<int> p{3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9};
+    
+    VM vm(
+        [](std::string s) -> int {
+            return 0;
+        },
+        [](int i) -> void {
+            BOOST_CHECK(!i);
+        }
+    );
+
+    vm.loadIntCode(p);
+    vm.execute();
+}
+
+BOOST_AUTO_TEST_CASE( test_5_8 )
+{
+    LOG_F(INFO, "- test_5_8 -------------------------------------");
+    std::vector<int> p{3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9};
+    
+    VM vm(
+        [](std::string s) -> int {
+            return 1;
+        },
+        [](int i) -> void {
+            BOOST_CHECK(i);
+        }
+    );
+
+    vm.loadIntCode(p);
+    vm.execute();
+}
+
+BOOST_AUTO_TEST_CASE( test_5_9 )
+{
+    LOG_F(INFO, "- test_5_9 -------------------------------------");
+    std::vector<int> p{3,3,1105,-1,9,1101,0,0,12,4,12,99,1};
+    
+    VM vm(
+        [](std::string s) -> int {
+            return 0;
+        },
+        [](int i) -> void {
+            LOG_F(INFO, "%d", i);
+            BOOST_CHECK(!i);
+        }
+    );
+
+    vm.loadIntCode(p);
+    vm.execute();
+}
+
+BOOST_AUTO_TEST_CASE( test_5_10 )
+{
+    LOG_F(INFO, "- test_5_10 -------------------------------------");
+    std::vector<int> p{3,3,1105,-1,9,1101,0,0,12,4,12,99,1};
+    
+    VM vm(
+        [](std::string s) -> int {
+            return 1;
+        },
+        [](int i) -> void {
+            BOOST_CHECK(i);
+        }
+    );
+
+    vm.loadIntCode(p);
+    vm.execute();
+}
+
+BOOST_AUTO_TEST_CASE( test_5_11 )
+{
+    std::vector<int> p{3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,
+                       1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,
+                       999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99
+    };
+    
+    VM vm(
+        [](std::string s) -> int {
+            return 7;
+        },
+        [](int i) -> void {
+            std::cout << i;
+        }
+    );
+
+    vm.loadIntCode(p);
+    vm.execute();
+}
+BOOST_AUTO_TEST_SUITE_END() // vm_day_5
 
 
 //____________________________________________________________________________//
