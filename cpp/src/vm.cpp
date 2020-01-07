@@ -12,18 +12,18 @@ VM::VM( int memSize ) : running_(false), pc_(0), relativeBase_(0)
 
     inputCB_ = [](std::string s) -> int {
         std::cout << s << " ";
-        int i = 0;
+        big_int i = 0;
         std::cin >> i;
         return i;
     };
 
-    outputCB_ = [](int s) -> void {
+    outputCB_ = [](big_int &s) -> void {
         std::cout << ": " << s << std::endl;
     };
 }
 
-VM::VM( std::function<int(std::string)>  inputCB, 
-        std::function<void(int)> ouputCB,
+VM::VM( std::function<big_int(std::string)>  inputCB, 
+        std::function<void(big_int&)> ouputCB,
         int memSize
 ) : running_(false), pc_(0), relativeBase_(0)
 {
@@ -47,7 +47,7 @@ void VM::loadIntCode(std::string &s)
         memory_[i] = std::stoi(sv[i]);
 }
 
-void VM::loadIntCode(std::vector<int> &v)
+void VM::loadIntCode(vector_big_int &v)
 {
     memory_ = v;
 }
@@ -84,6 +84,7 @@ void VM::execute()
             case JMF: operators_.jmf(memory_, pc_, relativeBase_); break;
             case LTN: operators_.ltn(memory_, pc_, relativeBase_); break;
             case EQL: operators_.eql(memory_, pc_, relativeBase_); break;
+            case REL: operators_.rel(memory_, pc_, relativeBase_); break;
             case HALT: running_ = false; break;
             default:
                 LOG_F(ERROR, "Unknown op: %d", memory_[pc_]);

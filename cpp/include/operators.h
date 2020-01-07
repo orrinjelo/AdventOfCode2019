@@ -3,6 +3,9 @@
 #include <vector>
 #include <functional>
 
+typedef int64_t big_int;
+typedef std::vector<big_int> vector_big_int;
+
 class Operators
 {
 public:
@@ -10,53 +13,59 @@ public:
     ~Operators() {};
 
     void add(
-        std::vector<int> &program,
+        vector_big_int   &program,
         int              &pc,
         int              offset=0
     );
 
     void mul(
-        std::vector<int> &program,
+        vector_big_int   &program,
         int              &pc,
         int              offset=0
     );
 
     void inp(
-        std::vector<int> &program,
+        vector_big_int   &program,
         int              &pc,
         int              offset,
-        std::function<int(std::string)> inputCallback
+        std::function<big_int(std::string)> inputCallback
     );
 
     void prt(
-        std::vector<int> &program,
+        vector_big_int   &program,
         int              &pc,
         int              offset,
-        std::function<void(int)> outputCallback
+        std::function<void(big_int&)> outputCallback
     );
 
     void jmp(
-        std::vector<int> &program,
+        vector_big_int   &program,
         int              &pc,
         int              offset=0
     );
 
     void jmf(
-        std::vector<int> &program,
+        vector_big_int   &program,
         int              &pc,
         int              offset=0
     );
 
     void ltn(
-        std::vector<int> &program,
+        vector_big_int   &program,
         int              &pc,
         int              offset=0
     );
 
     void eql(
-        std::vector<int> &program,
+        vector_big_int   &program,
         int              &pc,
         int              offset=0
+    );
+
+    void rel(
+        vector_big_int   &program,
+        int              &pc,
+        int              &offset
     );
 
 private:
@@ -69,17 +78,17 @@ private:
     );
 
     void interpretOperand(
-        std::vector<int> &program, 
-        int              &o, 
+        vector_big_int  &program, 
+        big_int          &o, 
         int              O, 
         int              offset
     );
 
     void interpretOperandAndSet(
-        std::vector<int> &program, 
-        int              value, 
-        int              &c, 
+        vector_big_int  &program, 
+        big_int          value, 
+        big_int          &c, 
         int              C, 
-        int              offset
+        int              &offset
     );
 };

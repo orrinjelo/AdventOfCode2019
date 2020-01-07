@@ -11,7 +11,7 @@ void Operators::scrapeOp(int x, int &A, int &B, int &C, int &DE)
     A = static_cast<int>(x / 10000) % 10;
 }
 
-void Operators::interpretOperand(std::vector<int> &program, int &o, int O, int offset)
+void Operators::interpretOperand(vector_big_int &program, big_int &o, int O, int offset)
 {
     LOG_F(MAX, "O = %d, o = %d, offset = %d", O, o, offset);
     switch (O)
@@ -30,7 +30,7 @@ void Operators::interpretOperand(std::vector<int> &program, int &o, int O, int o
     LOG_F(MAX, "o = %d", o);
 }
 
-void Operators::interpretOperandAndSet(std::vector<int> &program, int value, int &c, int C, int offset)
+void Operators::interpretOperandAndSet(vector_big_int &program, big_int value, big_int &c, int C, int &offset)
 {
     LOG_F(MAX, "value = %d, C = %d, c = %d, offset = %d", value, C, c, offset);
     switch (C)
@@ -50,14 +50,14 @@ void Operators::interpretOperandAndSet(std::vector<int> &program, int value, int
 }
 
 void Operators::add(
-        std::vector<int> &program,
-        int              &pc,
-        int              offset
+        vector_big_int &program,
+        int            &pc,
+        int            offset
     )
 {
-    int a  = program[pc + 1];
-    int b  = program[pc + 2];
-    int &c = program[pc + 3];
+    big_int a  = program[pc + 1];
+    big_int b  = program[pc + 2];
+    big_int &c = program[pc + 3];
 
     int A,B,C,DE;
     scrapeOp(program[pc],A,B,C,DE);
@@ -92,14 +92,14 @@ void Operators::add(
 
 
 void Operators::mul(
-        std::vector<int> &program,
+        vector_big_int   &program,
         int              &pc,
         int              offset
     )
 {
-    int a  = program[pc + 1];
-    int b  = program[pc + 2];
-    int &c = program[pc + 3];
+    big_int a  = program[pc + 1];
+    big_int b  = program[pc + 2];
+    big_int &c = program[pc + 3];
 
     int A,B,C,DE;
     scrapeOp(program[pc],A,B,C,DE);
@@ -133,16 +133,16 @@ void Operators::mul(
 
 
 void Operators::inp(
-        std::vector<int> &program,
+        vector_big_int   &program,
         int              &pc,
         int              offset,
-        std::function<int(std::string)> inputCallback
+        std::function<big_int(std::string)> inputCallback
     )
 {
-    int &c = program[pc + 1];
+    big_int &c = program[pc + 1];
 
     int A,B,C,DE;
-    scrapeOp(program[pc],C,A,B,DE);
+    scrapeOp(program[pc],A,B,C,DE);
 
     int x = 0;
     try
@@ -166,23 +166,25 @@ void Operators::inp(
 
 
 void Operators::prt(
-        std::vector<int> &program,
+        vector_big_int   &program,
         int              &pc,
         int              offset,
-        std::function<void(int)> outputCallback
+        std::function<void(big_int&)> outputCallback
     )
 {
-    int &c = program[pc + 1];
+    big_int &c = program[pc + 1];
 
     int A,B,C,DE;
-    scrapeOp(program[pc],C,A,B,DE);
+    scrapeOp(program[pc],A,B,C,DE);
 
     try
     {
         if (C == 0)
             outputCallback(program[c]);
-        else
+        else if (C == 1)
             outputCallback(c);
+        else if (C == 2)
+            outputCallback(program[c + offset]);
     } catch (std::runtime_error &e)
     {
         LOG_F(ERROR, "Input callback.");
@@ -192,13 +194,13 @@ void Operators::prt(
 }
 
 void Operators::jmp(
-        std::vector<int> &program,
+        vector_big_int   &program,
         int              &pc,
         int              offset
     )
 {
-    int b = program[pc + 1];
-    int c = program[pc + 2];
+    big_int b = program[pc + 1];
+    big_int c = program[pc + 2];
 
     int A,B,C,DE;
     scrapeOp(program[pc],A,B,C,DE);
@@ -227,13 +229,13 @@ void Operators::jmp(
 
 
 void Operators::jmf(
-        std::vector<int> &program,
+        vector_big_int   &program,
         int              &pc,
         int              offset
     )
 {
-    int b = program[pc + 1];
-    int c = program[pc + 2];
+    big_int b = program[pc + 1];
+    big_int c = program[pc + 2];
 
     int A,B,C,DE;
     scrapeOp(program[pc],A,B,C,DE);
@@ -254,6 +256,8 @@ void Operators::jmf(
         LOG_F(ERROR, "Bad C.");
     }
 
+    LOG_F(9,"b = %lld", (intmax_t)b);
+
     if (!b)
         pc = c;
     else
@@ -262,14 +266,14 @@ void Operators::jmf(
 
 
 void Operators::ltn(
-        std::vector<int> &program,
+        vector_big_int   &program,
         int              &pc,
         int              offset
     )
 {
-    int a  = program[pc + 1];
-    int b  = program[pc + 2];
-    int &c = program[pc + 3];
+    big_int a  = program[pc + 1];
+    big_int b  = program[pc + 2];
+    big_int &c = program[pc + 3];
 
     int A,B,C,DE;
     scrapeOp(program[pc],A,B,C,DE);
@@ -303,21 +307,21 @@ void Operators::ltn(
 
 
 void Operators::eql(
-        std::vector<int> &program,
+        vector_big_int   &program,
         int              &pc,
         int              offset
     )
 {
-    int a  = program[pc + 1];
-    int b  = program[pc + 2];
-    int &c = program[pc + 3];
+    big_int a  = program[pc + 1];
+    big_int b  = program[pc + 2];
+    big_int &c = program[pc + 3];
 
     int A,B,C,DE;
     scrapeOp(program[pc],A,B,C,DE);
 
     try
     {
-        interpretOperand(program, a, B, offset);
+        interpretOperand(program, a, C, offset);
     } catch (std::runtime_error &e)
     {
         LOG_F(ERROR, "Bad A.");
@@ -325,7 +329,7 @@ void Operators::eql(
 
     try
     {
-        interpretOperand(program, b, A, offset);
+        interpretOperand(program, b, B, offset);
     } catch (std::runtime_error &e)
     {
         LOG_F(ERROR, "Bad B.");
@@ -333,11 +337,36 @@ void Operators::eql(
     
     try
     {
-        interpretOperandAndSet(program, a == b ? 1 : 0, c, C, offset);
+        interpretOperandAndSet(program, a == b ? 1 : 0, c, A, offset);
     } catch (std::runtime_error &e)
     {
         LOG_F(ERROR, "Bad C.");
     }
 
     pc += 4;
+}
+
+
+void Operators::rel(
+        vector_big_int   &program,
+        int              &pc,
+        int              &offset
+    )
+{
+    big_int &c = program[pc + 1];
+
+    int A,B,C,DE;
+    scrapeOp(program[pc],A,B,C,DE);
+
+    try
+    {
+        interpretOperand(program, c, C, offset);
+    } catch (std::runtime_error &e)
+    {
+        LOG_F(ERROR, "Bad C.");
+    }
+
+    offset += c;
+
+    pc += 2;
 }
